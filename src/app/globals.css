@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tema: Critero Design System v1.2 (github.com/Criterio-inc/critero-design-system)
+   Palett: Naturgrön · Sand · Varm svart. Värdena nedan är designsystemets
+   hex-tokens omräknade till HSL-tripletter, eftersom Tailwinds hsl(var(--x))
+   och opacity-modifierare kräver kanalvärden. Ändra i designsystemet först,
+   uppdatera sedan här. */
+@layer base {
+  :root {
+    /* Sand-temat */
+    --background: 45 44% 89%;        /* --cr-bg #f0ead8 */
+    --foreground: 60 18% 9%;         /* --cr-text #1a1a12 */
+    --card: 42 57% 95%;              /* --cr-surface #faf6ed */
+    --card-foreground: 60 18% 9%;
+    --popover: 42 57% 95%;           /* --cr-surface-overlay */
+    --popover-foreground: 60 18% 9%;
+    --primary: 143 29% 34%;          /* --cr-primary #3d6e50 (skogsgrön) */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 41% 85%;         /* --cr-bg-subtle #e8dfc8 */
+    --secondary-foreground: 60 18% 9%;
+    --muted: 37 41% 91%;             /* --cr-surface-raised #f2ebe0 */
+    --muted-foreground: 53 11% 32%;  /* --cr-text-muted #5a5848 */
+    --accent: 143 29% 34%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 10 55% 35%;       /* --cr-danger #8a3828 */
+    --destructive-foreground: 0 0% 100%;
+    --warning: 40 60% 39%;           /* --cr-warning #a07828 */
+    --warning-foreground: 0 0% 100%;
+    --success: 102 39% 34%;          /* --cr-success #4a7a35 */
+    --success-foreground: 0 0% 100%;
+    --info: 196 35% 35%;             /* --cr-info #3a6878 */
+    --info-foreground: 0 0% 100%;
+    --border: 44 24% 81%;            /* --cr-border mot sand */
+    --input: 44 24% 81%;
+    --ring: 143 29% 34%;
+    --radius: 0.75rem;               /* --cr-radius-xl 12px */
+    /* Sidofält: djup skogsgrön med sandtext */
+    --sidebar-background: 148 30% 26%;         /* --cr-primary-hover #2e5540 */
+    --sidebar-foreground: 49 34% 84%;          /* --cr-text (mörkt tema) #e4dfc8 */
+    --sidebar-primary: 143 30% 42%;            /* --cr-primary (mörkt) #4a8a62 */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 146 29% 31%;
+    --sidebar-accent-foreground: 49 34% 84%;
+    --sidebar-border: 147 26% 31%;
+    --sidebar-ring: 143 30% 42%;
+  }
+
+  .dark {
+    /* Varm svart-temat */
+    --background: 60 5% 4%;          /* --cr-bg #0a0a09 */
+    --foreground: 49 34% 84%;        /* --cr-text #e4dfc8 */
+    --card: 60 5% 8%;                /* --cr-surface #161614 */
+    --card-foreground: 49 34% 84%;
+    --popover: 60 7% 14%;            /* --cr-surface-overlay #252520 */
+    --popover-foreground: 49 34% 84%;
+    --primary: 143 30% 42%;          /* --cr-primary #4a8a62 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 60 5% 11%;          /* --cr-surface-raised #1d1d1a */
+    --secondary-foreground: 49 34% 84%;
+    --muted: 60 5% 11%;
+    --muted-foreground: 56 12% 56%;  /* --cr-text-muted #9c9a80 */
+    --accent: 143 30% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 8 49% 52%;        /* --cr-danger #c05848 */
+    --destructive-foreground: 0 0% 100%;
+    --warning: 41 66% 51%;           /* --cr-warning #d4a030 */
+    --warning-foreground: 60 18% 9%;
+    --success: 103 36% 49%;          /* --cr-success #6aaa50 */
+    --success-foreground: 60 18% 9%;
+    --info: 192 32% 51%;             /* --cr-info #5a9aaa */
+    --info-foreground: 60 18% 9%;
+    --border: 45 6% 15%;             /* --cr-border mot surface */
+    --input: 45 6% 15%;
+    --ring: 143 30% 42%;
+    --sidebar-background: 60 5% 6%;
+    --sidebar-foreground: 49 34% 84%;
+    --sidebar-primary: 143 30% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 60 5% 11%;
+    --sidebar-accent-foreground: 49 34% 84%;
+    --sidebar-border: 45 6% 13%;
+    --sidebar-ring: 143 30% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    max-width: 100%;
+    /* Skyddsnät: tillåt aldrig horisontell scroll. Bryter inte vertikal
+       sticky (den följer dokumentets y-scroll, inte body-x). */
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+}
