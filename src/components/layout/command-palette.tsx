@@ -30,7 +30,7 @@ const pages = [
   { name: "Tidsrapportering", href: "/tidsrapportering", icon: Clock, keywords: "tid timmar vecka" },
   { name: "Aktivitet", href: "/aktivitet", icon: Activity, keywords: "statistik heatmap svit streak aktiva dagar" },
   { name: "Resor", href: "/resor", icon: Car, keywords: "resa mil km kilometerersättning parkering kvitto utlägg" },
-  { name: "Kalkylator", href: "/kalkylator", icon: Calculator, keywords: "jämför nettolön kalkyl" },
+  { name: "Kalkyl", href: "/ekonomi/kalkyl", icon: Calculator, keywords: "kalkylator jämför nettolön utdelning" },
   { name: "Kunder", href: "/kunder", icon: Users, keywords: "kund kontakt" },
   { name: "Ekonomi — översikt", href: "/ekonomi", icon: Wallet, keywords: "moms faktura kassa" },
   { name: "Ekonomi — fakturor", href: "/ekonomi/fakturor", icon: FileText, keywords: "fakturapaket dooer invoice" },

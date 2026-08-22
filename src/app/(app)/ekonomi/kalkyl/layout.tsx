@@ -6,7 +6,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function KalkylatorLayout({
+export default function KalkylLayout({
   children,
 }: {
   children: React.ReactNode;

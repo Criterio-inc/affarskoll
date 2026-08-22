@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,11 +72,6 @@ export default function KalkylatorPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Ekonomisk Kalkylator"
-        description="Jämför affärer, räkna nettolön och spara kalkyler"
-      />
-
       <Tabs defaultValue="jamfor" className="space-y-6">
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="jamfor" className="px-1 text-xs sm:text-sm sm:gap-1.5">

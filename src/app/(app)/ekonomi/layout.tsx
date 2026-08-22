@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   FileText,
   Receipt,
+  Calculator,
   BookOpen,
 } from "lucide-react";
 
@@ -15,6 +16,7 @@ const tabs = [
   { href: "/ekonomi", label: "Översikt", icon: LayoutDashboard, exact: true },
   { href: "/ekonomi/fakturor", label: "Fakturor", icon: FileText },
   { href: "/ekonomi/moms", label: "Momslogg", icon: Receipt },
+  { href: "/ekonomi/kalkyl", label: "Kalkyl", icon: Calculator },
   { href: "/ekonomi/kunskap", label: "Kunskap", icon: BookOpen },
 ];
 
@@ -29,7 +31,7 @@ export default function EkonomiLayout({
     <div className="space-y-6">
       <PageHeader
         title="Ekonomi"
-        description="Faktureringspaket, momslogg och kunskapsstöd"
+        description="Fakturor, momslogg, kalkyl och kunskapsstöd"
       />
 
       {/* Tabs */}

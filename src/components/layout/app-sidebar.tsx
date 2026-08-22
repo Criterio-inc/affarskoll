@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   Briefcase,
   Clock,
-  Calculator,
   Users,
   Settings,
   Moon,
@@ -23,11 +22,10 @@ import { NotificationBell } from "./notification-bell";
 const navItems = [
   { href: "/", label: "Översikt", icon: LayoutDashboard },
   { href: "/uppdrag", label: "Uppdrag", icon: Briefcase },
+  { href: "/kunder", label: "Kunder", icon: Users },
   { href: "/tidsrapportering", label: "Tidsrapportering", icon: Clock },
   { href: "/aktivitet", label: "Aktivitet", icon: Activity },
   { href: "/resor", label: "Resor", icon: Car },
-  { href: "/kalkylator", label: "Kalkylator", icon: Calculator },
-  { href: "/kunder", label: "Kunder", icon: Users },
   { href: "/ekonomi", label: "Ekonomi", icon: Wallet },
   { href: "/installningar", label: "Inställningar", icon: Settings },
 ];

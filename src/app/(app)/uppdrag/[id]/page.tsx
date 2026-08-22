@@ -304,7 +304,7 @@ export default function ProjectDetailPage() {
       await deleteProject.mutateAsync(id);
 
       toast.success("Uppdraget har flyttats till portföljen");
-      router.push("/kalkylator");
+      router.push("/ekonomi/kalkyl");
     } catch {
       toast.error("Kunde inte flytta uppdraget till portföljen");
     }
