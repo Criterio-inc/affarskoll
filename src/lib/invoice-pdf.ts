@@ -452,6 +452,9 @@ export async function downloadInvoicePdf(
   const [logoDataUrl, qrDataUrl] = await Promise.all([
     Promise.resolve(settings.companyLogoDataUrl || null),
     (async () => {
+      // Utan bankgiro blir betal-QR:en obrukbar i bankappen — utelämna den
+      // hellre än att rita en skanningsbar kod mot ett tomt konto.
+      if (!settings.companyBankgiro.trim()) return null;
       try {
         const QRCode = (await import("qrcode")).default;
         return await QRCode.toDataURL(buildInvoiceQrPayload(input, settings), {

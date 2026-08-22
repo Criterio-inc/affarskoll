@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { stripProtected } from "@/lib/api-guard";
 import { db } from "@/lib/db";
 import { vatEvents } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -14,7 +15,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
-    const body = await req.json();
+    const body = stripProtected(await req.json());
 
     const updates: Record<string, unknown> = { ...body };
     if (body.amountSek !== undefined)

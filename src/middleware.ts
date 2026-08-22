@@ -4,6 +4,9 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/api/webhooks(.*)",
+  // Vercels cron-anrop har ingen Clerk-session — routen vaktar sig själv
+  // med CRON_SECRET i Authorization-headern.
+  "/api/cron(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

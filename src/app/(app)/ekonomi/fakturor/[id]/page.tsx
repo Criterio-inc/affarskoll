@@ -260,13 +260,15 @@ export default function FakturapaketDetaljPage() {
   const adjustment = actual - theoretical;
   const hasAdjustment = Math.abs(adjustment) > 0.5;
 
-  async function handleSetStatus(newStatus: "utkast" | "skickad") {
+  async function handleSetStatus(newStatus: "utkast" | "skickad" | "krediterad") {
     if (!invoice) return;
     try {
       await update.mutateAsync({ id: invoice.id, status: newStatus });
       toast.success(
         newStatus === "skickad"
           ? "Markerad som skickad"
+          : newStatus === "krediterad"
+          ? "Faktura krediterad — tidsposterna kan faktureras på nytt"
           : "Återställd till utkast"
       );
     } catch {
@@ -466,6 +468,30 @@ export default function FakturapaketDetaljPage() {
                 <CheckCircle2 className="w-4 h-4 mr-1" />
                 Markera som betald
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={update.isPending}>
+                    Kreditera
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Kreditera fakturan?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Fakturan markeras som krediterad och räknas inte längre som
+                      fakturerad — de kopplade tidsposterna kan då tas med på en
+                      ny faktura. Själva kreditfakturan till mottagaren skapar du
+                      separat.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => handleSetStatus("krediterad")}>
+                      Kreditera
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </>
           )}
           <AlertDialog>
