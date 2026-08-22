@@ -6,6 +6,14 @@ Affärskoll samlar det en fristående konsult behöver ha koll på: uppdragen, t
 
 Fritt att forka och driftsätta för eget bruk. MIT-licens.
 
+![Översikt i ljust läge](.github/screenshots/oversikt-ljus.png)
+
+| Mörkt läge | Aktivitetsvyn |
+|---|---|
+| ![Översikt i mörkt läge](.github/screenshots/oversikt-mork.png) | ![Aktivitet med heatmap och sviter](.github/screenshots/aktivitet.png) |
+
+*Skärmdumparna visar demodata.*
+
 ## Funktioner
 
 - **Översikt** — intäkter, kostnader, nettoresultat, runway och faktureringskö
