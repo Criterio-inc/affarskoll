@@ -83,6 +83,13 @@ EKONOMI-MODUL (Fakturor + Momslogg):
   - 2645 = Beräknad ingående moms inköp utland`;
 
 export async function POST(req: Request) {
+  // AI är ett tillval — utan nyckel svarar vi tydligt i stället för SDK-krasch
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return new Response(
+      JSON.stringify({ error: "AI-funktionen är inte aktiverad (ANTHROPIC_API_KEY saknas)" }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    );
+  }
   try {
     const { userId } = await auth();
     if (!userId) {

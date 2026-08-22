@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, BookOpen } from "lucide-react";
+import { useAiEnabled } from "@/hooks/use-ai-enabled";
 import {
   useCreateVatEvent,
   useUpdateVatEvent,
@@ -93,6 +94,7 @@ export function VatEventForm({
   );
 
   // AI-fritext-läge
+  const aiEnabled = useAiEnabled();
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -232,7 +234,8 @@ export function VatEventForm({
 
   return (
     <div className="space-y-4">
-      {/* AI-fritext-fält */}
+      {/* AI-fritext-fält — visas bara när servern har en AI-nyckel */}
+      {aiEnabled && (
       <div className="rounded-md border bg-primary/5 p-3 space-y-2">
         <Label className="text-xs flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -267,6 +270,7 @@ export function VatEventForm({
           AI:n matchar mot kunskapsbasen och föreslår konton + moms-flöde. Granska alltid innan du sparar.
         </p>
       </div>
+      )}
 
       {/* Scenario-sökning */}
       <div className="space-y-2">

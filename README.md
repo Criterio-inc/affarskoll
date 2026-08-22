@@ -10,13 +10,12 @@ Fritt att forka och driftsätta för eget bruk. MIT-licens.
 
 - **Översikt** — intäkter, kostnader, nettoresultat, runway och faktureringskö
 - **Uppdrag** — status, arbetspaket, budgetvarningar, lönsamhet per uppdrag, tjänsteställebedömning (SKV)
-- **Tidsrapportering** — veckovy, snabbloggning, kopiera förra veckan, export till CSV/PDF
-- **Fakturor** — riktig fakturagenerator med PDF, löpnummerserie, betal-QR, tidrapportbilaga och dubbelfaktureringsskydd
-- **Moms** — momslogg med deklarationstillfällen för månads-, kvartals- och årsmoms
-- **Resor** — körjournal med kvittofoton och reseräkning som PDF
-- **Kalkylator** — timprisjämförelser, nettolön, utdelningsplanering (3:12)
 - **Kunder** — kundregister med fakturauppgifter och kommunikationslogg
-- **AI-assistent** (valfritt) — frågor om din egen data, momstolkning av kvitton
+- **Tidsrapportering** — veckovy, snabbloggning, kopiera förra veckan, export till CSV/PDF
+- **Aktivitet** — heatmap över loggade timmar, vardagssviter och toppstatistik
+- **Resor** — körjournal med kvittofoton och reseräkning som PDF
+- **Ekonomi** — fakturagenerator med PDF, löpnummerserie, betal-QR, tidrapportbilaga och dubbelfaktureringsskydd; momslogg med deklarationstillfällen; kalkyl för timpris, nettolön och utdelning (3:12); kunskapsbas med vanliga bokföringsscenarier på svensk BAS-kontoplan
+- **AI-assistent** (tillval) — frågor om din egen data och momstolkning i fritext; utan API-nyckel döljs AI-ytorna automatiskt och allt annat fungerar som vanligt
 - Kommandopalett (Cmd+K), mörkt läge, mobilanpassad
 
 ## Teknik
@@ -43,7 +42,7 @@ Fyll i värdena i `.env`:
 
 - **Clerk** — skapa en app på [dashboard.clerk.com](https://dashboard.clerk.com) (gratis)
 - **Neon** — skapa en databas på [console.neon.tech](https://console.neon.tech) (gratis)
-- **ANTHROPIC_API_KEY** — valfritt, låser upp AI-assistenten
+- **ANTHROPIC_API_KEY** — tillval; utan nyckel döljs AI-funktionerna automatiskt
 - **CRON_SECRET** — valfri slumpsträng, skyddar notisjobben
 
 ### 3. Databas
@@ -74,7 +73,7 @@ Cron-jobben i `vercel.json` (dagliga och veckovisa notiser) aktiveras automatisk
 ```
 src/
   app/              # Next.js App Router-sidor
-    (app)/          # Inloggad app (översikt, uppdrag, tid, ekonomi, resor ...)
+    (app)/          # Inloggad app (översikt, uppdrag, tid, aktivitet, ekonomi ...)
     (auth)/         # Inloggning/registrering
     api/            # API-routes
   components/       # React-komponenter

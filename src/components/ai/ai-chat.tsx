@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useAiEnabled } from "@/hooks/use-ai-enabled";
 
 const chatTransport = new DefaultChatTransport({
   api: "/api/ai/chat",
@@ -24,6 +25,7 @@ const chatTransport = new DefaultChatTransport({
 const DISCOVERED_KEY = "affarskoll:ai-chat-discovered";
 
 export function AiChat() {
+  const aiEnabled = useAiEnabled();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [hasDiscovered, setHasDiscovered] = useState(true);
@@ -105,6 +107,9 @@ export function AiChat() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Ingen nyckel på servern → ingen AI-yta alls (efter alla hooks, för hook-reglerna)
+  if (!aiEnabled) return null;
 
   return (
     <>
