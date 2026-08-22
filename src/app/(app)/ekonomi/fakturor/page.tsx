@@ -71,7 +71,7 @@ export default function FakturaListaPage() {
         (i) =>
           i.customerName.toLowerCase().includes(q) ||
           i.projectTitle?.toLowerCase().includes(q) ||
-          i.dooerInvoiceNumber?.toLowerCase().includes(q) ||
+          i.externalInvoiceNumber?.toLowerCase().includes(q) ||
           (i.invoiceNumber != null && String(i.invoiceNumber).includes(q)) ||
           i.buyerName?.toLowerCase().includes(q)
       );
@@ -175,9 +175,9 @@ export default function FakturaListaPage() {
                               Faktura {inv.invoiceNumber}
                             </Badge>
                           )}
-                          {inv.dooerInvoiceNumber && (
+                          {inv.externalInvoiceNumber && (
                             <Badge variant="outline" className="text-[10px] font-mono">
-                              {inv.dooerInvoiceNumber}
+                              {inv.externalInvoiceNumber}
                             </Badge>
                           )}
                         </div>

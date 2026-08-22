@@ -65,7 +65,7 @@ När du skapar ett uppdrag OCH användaren vill ha det i portföljen, skapa proj
 Bekräfta alltid vad du skapat med en kort sammanfattning.
 
 EKONOMI-MODUL (Fakturor + Momslogg):
-- Fakturor GENERERAS numera i appen (Ekonomi → Fakturor → Ny faktura): löpnummer sätts automatiskt (730, 731 ...), rader byggs från tidsposterna, PDF med tidrapportbilaga laddas ner från fakturasidan. Dooer används för bokföringen; äldre fakturor har bara Dooer-nummer (dooerInvoiceNumber) och inget löpnummer.
+- Fakturor GENERERAS numera i appen (Ekonomi → Fakturor → Ny faktura): löpnummer sätts automatiskt (730, 731 ...), rader byggs från tidsposterna, PDF med tidrapportbilaga laddas ner från fakturasidan. Äldre fakturor kan sakna löpnummer och i stället ha ett externt fakturanummer (externalInvoiceNumber) från ett tidigare bokföringsflöde.
 - Vid frågor om utgifter, moms, BAS-konton — använd ALLTID lookupVatScenario FÖRST för att hitta rätt konto och momsbehandling.
 - Vid moms-händelser där användaren beskriver i fritext: använd lookupVatScenario, sedan createVatEvent.
 - Användaren kör KONTANTMETODEN och har KVARTALSMOMS sedan 2026 — momsen redovisas vid betalningsdatum (eller fakturans momsdatum om satt), inte fakturadatum.
@@ -652,7 +652,6 @@ Dagens datum: ${new Date().toISOString().split("T")[0]}`;
               shortDescription: s.shortDescription,
               flow: s.flow,
               example: s.example,
-              dooerInstructions: s.dooerInstructions,
             })),
           };
         },
@@ -861,7 +860,7 @@ Dagens datum: ${new Date().toISOString().split("T")[0]}`;
               invoiceNumber: p.invoiceNumber,          // appgenererad faktura (730, 731 ...)
               buyer: p.buyerName,                       // fakturamottagare (t.ex. förmedlingspartnern)
               generatedInApp: p.invoiceNumber != null,
-              dooerInvoiceNumber: p.dooerInvoiceNumber, // äldre Dooer-flödet
+              externalInvoiceNumber: p.externalInvoiceNumber, // fakturerad utanför appen
               periodStart: p.periodStart,
               periodEnd: p.periodEnd,
             })),

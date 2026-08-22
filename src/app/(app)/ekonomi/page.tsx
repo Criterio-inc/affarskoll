@@ -259,7 +259,7 @@ export default function EkonomiOversiktPage() {
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
                       {inv.customerName}
-                      {inv.dooerInvoiceNumber ? ` · ${inv.dooerInvoiceNumber}` : ""}
+                      {inv.externalInvoiceNumber ? ` · ${inv.externalInvoiceNumber}` : ""}
                     </p>
                   </div>
                   <div className="text-right ml-2">

@@ -77,7 +77,7 @@ export async function POST(
           userId,
           eventDate: vatEventDate,
           description: `Faktura: ${pkg.projectTitle ?? pkg.customerName}${
-            pkg.dooerInvoiceNumber ? ` (${pkg.dooerInvoiceNumber})` : ""
+            pkg.externalInvoiceNumber ? ` (${pkg.externalInvoiceNumber})` : ""
           }`,
           supplier: pkg.customerName,
           amountSek: String(actualAmount),

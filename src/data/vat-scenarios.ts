@@ -1,5 +1,5 @@
 // Kunskapsbas för moms- och bokföringshantering
-// Anpassad för svenska enmanskonsulter som använder Dooer (förenklad BAS-kontoplan)
+// För svenska enmanskonsulter — förenklad svensk BAS-kontoplan
 
 export type VatCategory =
   | "purchase_se"        // Inköp Sverige
@@ -32,11 +32,10 @@ export interface VatScenario {
   shortDescription: string;
   flow: string;          // Steg-för-steg
   example: string;       // Konkret exempel
-  dooerInstructions?: string; // Specifik vägledning för Dooer
 }
 
 // ============================================================================
-// BAS-KONTON (förenklad lista, anpassad för Dooer)
+// BAS-KONTON (förenklat urval ur svenska BAS-kontoplanen)
 // ============================================================================
 
 export const BAS_ACCOUNTS = {
@@ -123,7 +122,6 @@ export const VAT_SCENARIOS: VatScenario[] = [
       "Telia-räkning 625 kr inkl moms\n" +
       "→ 500 kr på 6212 (kostnad)\n" +
       "→ 125 kr på 2640 (moms du får tillbaka)",
-    dooerInstructions: "Använd mall 'IT-tjänster' eller 'Telefon' i Dooer.",
   },
   {
     key: "internet-se",
@@ -224,7 +222,6 @@ export const VAT_SCENARIOS: VatScenario[] = [
       "Microsoft 365 Business 130 kr/mån utan moms\n" +
       "→ 130 kr på 5420 (kostnad)\n" +
       "→ +33 kr utgående / -33 kr ingående (netto 0)",
-    dooerInstructions: "Välj 'Inköp tjänst EU' i Dooer (mall finns).",
   },
   {
     key: "stripe-fees",
@@ -296,7 +293,6 @@ export const VAT_SCENARIOS: VatScenario[] = [
       "Cursor Pro 19 USD ≈ 200 kr\n" +
       "→ 200 kr på 6540 (kostnad)\n" +
       "→ +50 utgående / -50 ingående (netto 0)",
-    dooerInstructions: "Välj 'Inköp tjänst icke-EU' i Dooer.",
   },
   {
     key: "adobe-cloud-usa",
@@ -383,7 +379,7 @@ export const VAT_SCENARIOS: VatScenario[] = [
     flow:
       "1) Räkna antal personer × 60 kr som avdragsgillt belopp\n" +
       "2) Konto 6071 (avdragsgill del) + ingående moms 12 % på den delen\n" +
-      "3) Resten är icke-avdragsgill → bokförs separat (Dooer hanterar detta)",
+      "3) Resten är icke-avdragsgill → bokförs separat i bokföringen",
     example:
       "Lunch 2 personer 800 kr inkl moms\n" +
       "→ Avdragsgillt: 60 × 2 = 120 kr (12 % moms = 14 kr)\n" +

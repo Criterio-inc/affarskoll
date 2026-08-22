@@ -94,7 +94,7 @@ export default function NyttFakturapaketPage() {
     new Date().toISOString().slice(0, 10)
   );
   const [dueDate, setDueDate] = useState<string>("");
-  const [dooerInvoiceNumber, setDooerInvoiceNumber] = useState<string>("");
+  const [externalInvoiceNumber, setExternalInvoiceNumber] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
   // Genererad faktura (current mode): köpare, rader, fritext, villkor
@@ -441,7 +441,7 @@ export default function NyttFakturapaketPage() {
         basAccount,
         issueDate: issueDate || null,
         dueDate: dueDate || null,
-        dooerInvoiceNumber: dooerInvoiceNumber || null,
+        externalInvoiceNumber: externalInvoiceNumber || null,
         linkedTimeEntryIds:
           mode === "current" ? matchingTimeEntries.map((e) => e.id) : [],
         notes: notes || null,
@@ -918,11 +918,11 @@ export default function NyttFakturapaketPage() {
             </CardContent>
           </Card>
 
-          {/* Datum och Dooer-koppling */}
+          {/* Datum och extern referens */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">
-                {mode === "current" ? "Datum" : "Datum & Dooer"}
+                {mode === "current" ? "Datum" : "Datum & referens"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -983,11 +983,11 @@ export default function NyttFakturapaketPage() {
 
               {mode === "historical" && (
                 <div className="space-y-2">
-                  <Label>Dooer-fakturanummer (valfritt)</Label>
+                  <Label>Externt fakturanummer (valfritt)</Label>
                   <Input
                     placeholder="t.ex. INV-2025-001"
-                    value={dooerInvoiceNumber}
-                    onChange={(e) => setDooerInvoiceNumber(e.target.value)}
+                    value={externalInvoiceNumber}
+                    onChange={(e) => setExternalInvoiceNumber(e.target.value)}
                   />
                 </div>
               )}

@@ -118,7 +118,7 @@ export default function FakturapaketDetaljPage() {
   const markPaid = useMarkInvoicePaid();
   const [pdfBusy, setPdfBusy] = useState(false);
 
-  const [dooerNumberInput, setDooerNumberInput] = useState("");
+  const [externalNumberInput, setExternalNumberInput] = useState("");
   const [showPaidDialog, setShowPaidDialog] = useState(false);
   const [paidDateInput, setPaidDateInput] = useState(
     new Date().toISOString().slice(0, 10)
@@ -274,16 +274,16 @@ export default function FakturapaketDetaljPage() {
     }
   }
 
-  async function handleSaveDooerNumber() {
+  async function handleSaveExternalNumber() {
     if (!invoice) return;
-    if (!dooerNumberInput.trim()) return;
+    if (!externalNumberInput.trim()) return;
     try {
       await update.mutateAsync({
         id: invoice.id,
-        dooerInvoiceNumber: dooerNumberInput.trim(),
+        externalInvoiceNumber: externalNumberInput.trim(),
       });
-      setDooerNumberInput("");
-      toast.success("Dooer-nummer sparat");
+      setExternalNumberInput("");
+      toast.success("Fakturanummer sparat");
     } catch {
       toast.error("Kunde inte spara");
     }
@@ -400,9 +400,9 @@ export default function FakturapaketDetaljPage() {
                   Faktura {invoice.invoiceNumber}
                 </Badge>
               )}
-              {invoice.dooerInvoiceNumber && (
+              {invoice.externalInvoiceNumber && (
                 <Badge variant="outline" className="font-mono">
-                  {invoice.dooerInvoiceNumber}
+                  {invoice.externalInvoiceNumber}
                 </Badge>
               )}
             </div>
@@ -681,7 +681,7 @@ export default function FakturapaketDetaljPage() {
           </Card>
         </div>
 
-        {/* Höger: Dooer-koppling / genererad faktura */}
+        {/* Höger: extern faktura / genererad faktura */}
         <div className="space-y-4">
           {isGenerated && (
             <Card>
@@ -717,21 +717,21 @@ export default function FakturapaketDetaljPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <ExternalLink className="w-4 h-4" />
-                Dooer-koppling
+                Extern faktura
               </CardTitle>
               <CardDescription>
-                Skapa fakturan i Dooer och fyll i numret här
+                Faktura skapad utanför appen? Fyll i numret här
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {invoice.dooerInvoiceNumber ? (
+              {invoice.externalInvoiceNumber ? (
                 <>
                   <div className="rounded-md border bg-muted/30 p-3">
                     <p className="text-xs text-muted-foreground">
-                      Dooer-fakturanummer
+                      Externt fakturanummer
                     </p>
                     <p className="font-mono font-semibold">
-                      {invoice.dooerInvoiceNumber}
+                      {invoice.externalInvoiceNumber}
                     </p>
                   </div>
                   <Button
@@ -739,30 +739,30 @@ export default function FakturapaketDetaljPage() {
                     size="sm"
                     className="w-full"
                     onClick={() => {
-                      setDooerNumberInput(invoice.dooerInvoiceNumber ?? "");
+                      setExternalNumberInput(invoice.externalInvoiceNumber ?? "");
                     }}
                   >
                     Ändra
                   </Button>
-                  {dooerNumberInput && (
+                  {externalNumberInput && (
                     <div className="space-y-2 pt-2">
                       <Input
-                        value={dooerNumberInput}
-                        onChange={(e) => setDooerNumberInput(e.target.value)}
+                        value={externalNumberInput}
+                        onChange={(e) => setExternalNumberInput(e.target.value)}
                         placeholder="Nytt nummer"
                       />
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           className="flex-1"
-                          onClick={handleSaveDooerNumber}
+                          onClick={handleSaveExternalNumber}
                         >
                           Spara
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setDooerNumberInput("")}
+                          onClick={() => setExternalNumberInput("")}
                         >
                           Avbryt
                         </Button>
@@ -773,25 +773,25 @@ export default function FakturapaketDetaljPage() {
               ) : (
                 <div className="space-y-2">
                   <Label className="text-xs">
-                    Klistra in Dooer-fakturanummer
+                    Externt fakturanummer
                   </Label>
                   <Input
                     placeholder="t.ex. INV-2026-001"
-                    value={dooerNumberInput}
-                    onChange={(e) => setDooerNumberInput(e.target.value)}
+                    value={externalNumberInput}
+                    onChange={(e) => setExternalNumberInput(e.target.value)}
                   />
                   <Button
                     size="sm"
                     className="w-full"
-                    onClick={handleSaveDooerNumber}
-                    disabled={!dooerNumberInput.trim() || update.isPending}
+                    onClick={handleSaveExternalNumber}
+                    disabled={!externalNumberInput.trim() || update.isPending}
                   >
                     Spara
                   </Button>
                 </div>
               )}
               <p className="text-xs text-muted-foreground pt-2">
-                💡 Skapa fakturan i Dooer som vanligt — sedan kopierar du fakturanumret hit för avstämning.
+                💡 Fakturerar du via ett externt bokföringsprogram? Kopiera fakturanumret hit för avstämning.
               </p>
             </CardContent>
           </Card>

@@ -266,7 +266,7 @@ export async function generateUserNotifications(
         const created = await createNotification(
           userId,
           "billing_reminder",
-          `Faktura förfallen: ${inv.dooerInvoiceNumber ?? inv.projectTitle}`,
+          `Faktura förfallen: ${inv.invoiceNumber != null ? `#${inv.invoiceNumber}` : inv.externalInvoiceNumber ?? inv.projectTitle}`,
           `Skickad faktura till ${inv.customerName} har varit förfallen i ${daysOverdue} dagar utan betalning. Belopp: ${Math.round(Number(inv.totalInclVat))} kr inkl moms.`,
           inv.projectId
         );

@@ -30,7 +30,7 @@ export interface InvoicePackage {
   dueDate: string | null;
   paidDate: string | null;
   vatDate: string | null;
-  dooerInvoiceNumber: string | null;
+  externalInvoiceNumber: string | null;
   invoiceNumber: number | null;
   invoiceLines: InvoiceLine[] | null;
   buyerName: string | null;
@@ -63,7 +63,7 @@ export type NewInvoicePackageInput = {
   issueDate?: string | null;
   dueDate?: string | null;
   paidDate?: string | null;
-  dooerInvoiceNumber?: string | null;
+  externalInvoiceNumber?: string | null;
   linkedTimeEntryIds?: string[];
   notes?: string | null;
   // Genererad faktura

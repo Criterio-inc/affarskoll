@@ -183,13 +183,6 @@ function ScenarioCard({ scenario }: { scenario: VatScenario }) {
           <p className="whitespace-pre-line">{scenario.example}</p>
         </div>
 
-        {/* Dooer-instruktioner */}
-        {scenario.dooerInstructions && (
-          <div className="rounded-md border bg-green-500/5 border-green-500/20 p-2 text-xs">
-            <p className="text-muted-foreground mb-1 font-medium">💡 I Dooer:</p>
-            <p>{scenario.dooerInstructions}</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

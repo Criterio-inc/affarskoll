@@ -328,7 +328,7 @@ export default function InstallningarPage() {
                 placeholder="0"
               />
               <p className="text-xs text-muted-foreground">
-                Ingående kassa för Runway-beräkningen på dashboarden. Uppdatera manuellt från Dooer ca 1 ggr/månad.
+                Ingående kassa för Runway-beräkningen på dashboarden. Uppdatera manuellt från banken eller bokföringen ungefär en gång i månaden.
               </p>
             </div>
             <div className="space-y-2">

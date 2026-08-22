@@ -33,7 +33,7 @@ const pages = [
   { name: "Kalkyl", href: "/ekonomi/kalkyl", icon: Calculator, keywords: "kalkylator jämför nettolön utdelning" },
   { name: "Kunder", href: "/kunder", icon: Users, keywords: "kund kontakt" },
   { name: "Ekonomi — översikt", href: "/ekonomi", icon: Wallet, keywords: "moms faktura kassa" },
-  { name: "Ekonomi — fakturor", href: "/ekonomi/fakturor", icon: FileText, keywords: "fakturapaket dooer invoice" },
+  { name: "Ekonomi — fakturor", href: "/ekonomi/fakturor", icon: FileText, keywords: "fakturapaket faktura invoice" },
   { name: "Nytt fakturapaket", href: "/ekonomi/fakturor/ny", icon: Plus, keywords: "skapa faktura historiskt" },
   { name: "Ekonomi — momslogg", href: "/ekonomi/moms", icon: Receipt, keywords: "moms skatteverket vat" },
   { name: "Ekonomi — kunskap", href: "/ekonomi/kunskap", icon: BookOpen, keywords: "bas konton scenario hjälp" },

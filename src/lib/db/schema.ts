@@ -229,7 +229,7 @@ export const timesheetTemplates = pgTable("timesheet_templates", {
 
 // ============================================================================
 // INVOICE PACKAGES (Fakturor — appgenererade med löpnummer sedan aug 2026;
-// äldre poster är Dooer-underlag med enbart dooerInvoiceNumber)
+// äldre poster har enbart ett externt fakturanummer)
 // ============================================================================
 
 export const invoicePackages = pgTable(
@@ -263,9 +263,9 @@ export const invoicePackages = pgTable(
     // Sätts t.ex. till 31 dec för decemberarbete som faktureras året efter
     // (kundfordran bokförs på arbetsåret, moms på det året — inte betalåret).
     vatDate: date("vat_date"),
-    // Dooer-koppling
-    dooerInvoiceNumber: text("dooer_invoice_number"),                // manuellt ifyllt
-    // Genererad faktura (appen som fakturakälla, ersätter Dooer-flödet aug 2026)
+    // Externt fakturanummer — för fakturor skapade i ett annat system
+    externalInvoiceNumber: text("external_invoice_number"),                // manuellt ifyllt
+    // Genererad faktura (appen som fakturakälla sedan aug 2026)
     invoiceNumber: integer("invoice_number"),                        // löpnummer: 730, 731, 732 ... (sätts av API:t)
     invoiceLines: jsonb("invoice_lines").default([]),                // InvoiceLine[] — radposter på fakturan
     buyerName: text("buyer_name"),                                   // Köpare (t.ex. förmedlingspartnern) — kan skilja sig från slutkunden
