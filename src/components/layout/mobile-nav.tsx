@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Activity,
   LayoutDashboard,
   Briefcase,
   Clock,
@@ -33,6 +34,7 @@ const drawerNav = [
   { href: "/", label: "Översikt", icon: LayoutDashboard },
   { href: "/uppdrag", label: "Uppdrag", icon: Briefcase },
   { href: "/tidsrapportering", label: "Tidsrapportering", icon: Clock },
+  { href: "/aktivitet", label: "Aktivitet", icon: Activity },
   { href: "/resor", label: "Resor", icon: Car },
   { href: "/kalkylator", label: "Kalkylator", icon: Calculator },
   { href: "/kunder", label: "Kunder", icon: Users },

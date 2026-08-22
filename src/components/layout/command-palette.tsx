@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import {
+  Activity,
   LayoutDashboard,
   Briefcase,
   Clock,
@@ -27,6 +28,7 @@ const pages = [
   { name: "Uppdrag", href: "/uppdrag", icon: Briefcase, keywords: "projekt" },
   { name: "Nytt uppdrag", href: "/uppdrag/nytt", icon: Plus, keywords: "skapa ny projekt" },
   { name: "Tidsrapportering", href: "/tidsrapportering", icon: Clock, keywords: "tid timmar vecka" },
+  { name: "Aktivitet", href: "/aktivitet", icon: Activity, keywords: "statistik heatmap svit streak aktiva dagar" },
   { name: "Resor", href: "/resor", icon: Car, keywords: "resa mil km kilometerersättning parkering kvitto utlägg" },
   { name: "Kalkylator", href: "/kalkylator", icon: Calculator, keywords: "jämför nettolön kalkyl" },
   { name: "Kunder", href: "/kunder", icon: Users, keywords: "kund kontakt" },
