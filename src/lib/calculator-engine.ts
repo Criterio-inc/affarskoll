@@ -709,6 +709,28 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
     const effectiveSettings = getAssignmentEffectiveSettings(assignment, settings);
     const totalGrossRevenue = calculateAssignmentRevenue(assignment, settings);
 
+    // Fastprisdelen faktureras i klump när uppdraget är klart: den läggs i
+    // månaden efter slutmånaden (eller senare om uppdraget har längre
+    // fördröjning). Timdelen faktureras löpande med vanlig fördröjning.
+    // Det arbetade värdet (workedRevenueValue) sprids fortfarande över tiden.
+    const fixedPart =
+      assignment.contractType === 'fastpris' ||
+      assignment.contractType === 'fastpris_overtid' ||
+      assignment.contractType === 'blandat'
+        ? Math.min(assignment.fixedPrice ?? 0, totalGrossRevenue)
+        : 0;
+    const hourlyPart = totalGrossRevenue - fixedPart;
+    if (fixedPart > 0) {
+      const endMonthKey = format(aEnd, 'yyyy-MM');
+      const endIdx = monthRange.findIndex((m) => format(m, 'yyyy-MM') === endMonthKey);
+      const payIdx = endIdx + Math.max(1, lagMonths);
+      if (endIdx >= 0 && payIdx < monthRange.length) {
+        const payData = laggedRevenueByMonth.get(format(monthRange[payIdx], 'yyyy-MM'))!;
+        payData.total += fixedPart * (1 - effectiveSettings.brokerCommissionRate);
+        payData.sourceMonths.add(format(aEnd, 'MMM', { locale: sv }));
+      }
+    }
+
     monthRange.forEach((monthDate, monthIndex) => {
       const monthStart = startOfMonth(monthDate);
       const monthEnd = endOfMonth(monthDate);
@@ -731,6 +753,9 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
           totalGrossRevenue
         );
         const netRevenue = monthlyGrossRevenue * (1 - effectiveSettings.brokerCommissionRate);
+        // Andel som faktureras löpande (fastprisdelen är redan lagd ovan)
+        const netInvoicedRevenue =
+          totalGrossRevenue > 0 ? netRevenue * (hourlyPart / totalGrossRevenue) : 0;
 
         const currentData = workedDataByMonth.get(monthKey)!;
         currentData.hours += workedHours;
@@ -744,8 +769,10 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
         if (laggedMonthIndex < monthRange.length) {
           const laggedMonthKey = format(monthRange[laggedMonthIndex], 'yyyy-MM');
           const laggedData = laggedRevenueByMonth.get(laggedMonthKey)!;
-          laggedData.total += netRevenue;
-          laggedData.sourceMonths.add(monthLabel);
+          if (netInvoicedRevenue > 0) {
+            laggedData.total += netInvoicedRevenue;
+            laggedData.sourceMonths.add(monthLabel);
+          }
         }
       }
     });
