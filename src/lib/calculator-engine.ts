@@ -446,7 +446,7 @@ const computeOverheadCost = (settings: AppSettings): number => {
 /**
  * Calculate monthly costs broken down by overhead and salary.
  *
- * - Overhead is charged when there is active work being performed.
+ * - Overhead is charged in months with full booking (see isFullyBookedMonth).
  * - Salary is charged when the invoiced month had full booking (see isFullyBookedMonth).
  */
 export const calculateMonthlyCosts = (
@@ -799,21 +799,7 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
   let cumulative = 0;
 
   return monthRange.map((monthDate, monthIdx) => {
-    const monthStart = startOfMonth(monthDate);
-    const monthEnd = endOfMonth(monthDate);
     const monthKey = format(monthDate, 'yyyy-MM');
-
-    // Find assignments active in this month (for costs)
-    const activeAssignments = validAssignments.filter((a) => {
-      const aStart = safeParseDate(a.startDate);
-      const aEnd = safeParseDate(a.endDate);
-      if (!aStart || !aEnd) return false;
-      return (
-        isWithinInterval(monthStart, { start: aStart, end: aEnd }) ||
-        isWithinInterval(monthEnd, { start: aStart, end: aEnd }) ||
-        (aStart <= monthStart && aEnd >= monthEnd)
-      );
-    });
 
     // Get lagged revenue (from previous months' work)
     const laggedData = laggedRevenueByMonth.get(monthKey);
@@ -830,9 +816,12 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
         workedDataByMonth.get(format(monthRange[salaryBasisIdx], 'yyyy-MM'))?.hours ?? 0,
         settings
       );
+    // Overhead, förmedlingsavgift och projektkostnader dras bara i månader
+    // med full beläggning (samma månad som arbetet, ingen fördröjning).
+    const hasFullBooking = isFullyBookedMonth(workedData.hours, settings);
     const costBreakdown = calculateMonthlyCosts(
       settings,
-      activeAssignments.length > 0,
+      hasFullBooking,
       canWithdrawSalary
     );
 
