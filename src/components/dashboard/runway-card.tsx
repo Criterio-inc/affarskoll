@@ -4,7 +4,11 @@ import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Clock, AlertTriangle, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-import { calculateMonthlyForecast, getSafeSettings } from "@/lib/calculator-engine";
+import {
+  calculateMonthlyForecast,
+  getSafeSettings,
+  isFullyBookedMonth,
+} from "@/lib/calculator-engine";
 import { AppSettings } from "@/lib/settings";
 import { PortfolioAssignment } from "@/types/portfolio";
 
@@ -48,16 +52,11 @@ export function RunwayCard({
       };
     }
 
-    // Bokad beläggning framåt: månader där minst halva normalbeläggningen är
-    // bokad. En månad med ett par timmar (t.ex. en utbildning utspridd över
-    // ett år) är ingen beläggning, men prognosen drar full lön för den och
-    // gav ett stort falskt minus. (Prognosen sträcker sig flera år och nollar
-    // lönen i tomma månader, så ett rått "månader tills negativ" blev
-    // missvisande höga 37.)
-    const monthlyTarget = (safeSettings.targetBillableHoursPerYear || 1400) / 12;
-    const minHours = monthlyTarget * 0.5;
+    // Bokad beläggning framåt: månader med full beläggning, samma regel som
+    // styr lönen i prognosen. En månad med ett par timmar (t.ex. en
+    // utbildning utspridd över ett år) är ingen beläggning.
     const isBooked = (m: (typeof forecast)[number]) =>
-      (m.workedHours ?? 0) >= minHours;
+      isFullyBookedMonth(m.workedHours ?? 0, safeSettings);
     const committedMonths = forecast.filter(isBooked).length;
 
     // Perioden räknas till sista bokade månaden plus intäktsfördröjningen,

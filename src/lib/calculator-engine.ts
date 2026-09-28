@@ -447,7 +447,7 @@ const computeOverheadCost = (settings: AppSettings): number => {
  * Calculate monthly costs broken down by overhead and salary.
  *
  * - Overhead is charged when there is active work being performed.
- * - Salary is charged when there is revenue (you need income to draw salary).
+ * - Salary is charged when the invoiced month had full booking (see isFullyBookedMonth).
  */
 export const calculateMonthlyCosts = (
   settings: AppSettings,
@@ -470,6 +470,18 @@ export const calculateMonthlyCosts = (
  */
 export const calculateBreakEvenThreshold = (settings: AppSettings): number => {
   return computeSalaryCost(settings) + computeOverheadCost(settings);
+};
+
+/**
+ * Full beläggning: minst 80 % av normal månadsbeläggning
+ * (targetBillableHoursPerYear / 12). Styr lönen i prognosen och
+ * "bokad beläggning" på Runway-kortet.
+ */
+export const FULL_BOOKING_SHARE = 0.8;
+
+export const isFullyBookedMonth = (hours: number, settings: AppSettings): boolean => {
+  const monthlyTarget = (settings.targetBillableHoursPerYear || 1400) / 12;
+  return hours >= monthlyTarget * FULL_BOOKING_SHARE;
 };
 
 // ============================================================================
@@ -779,9 +791,11 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
   });
 
   // Step 3: Build final monthly data with lagged revenue
-  // L10 Fix (Fas 3.4): Use rolling 3-month revenue window to determine salary eligibility.
-  // This prevents misleading "0 salary" months when there's a brief revenue gap between assignments.
-  const ROLLING_WINDOW_MONTHS = 3;
+  // Lön tas bara ut när arbetet som fakturan gäller var full beläggning.
+  // Fakturan kommer med fördröjning (minst en månad), så månad M får lön om
+  // månaden M − fördröjning hade full beläggning. Tunna månader (t.ex. en
+  // utbildning på några timmar i månaden) ger ingen lön.
+  const salaryLag = Math.max(1, settings.defaultRevenueLagMonths ?? 1);
   let cumulative = 0;
 
   return monthRange.map((monthDate, monthIdx) => {
@@ -809,20 +823,17 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
     // Get worked data for this month
     const workedData = workedDataByMonth.get(monthKey)!;
 
-    // L10: Rolling 3-month revenue window (current + 2 previous)
-    let rollingRevenue = 0;
-    for (let i = Math.max(0, monthIdx - ROLLING_WINDOW_MONTHS + 1); i <= monthIdx; i++) {
-      const pastKey = format(monthRange[i], 'yyyy-MM');
-      rollingRevenue += laggedRevenueByMonth.get(pastKey)?.total ?? 0;
-    }
-
-    // Calculate costs using the consistent helper (B3 fix)
-    // Salary is drawable if the rolling window contains revenue (handles month-to-month gaps).
-    const hasRollingRevenue = rollingRevenue > 0;
+    const salaryBasisIdx = monthIdx - salaryLag;
+    const canWithdrawSalary =
+      salaryBasisIdx >= 0 &&
+      isFullyBookedMonth(
+        workedDataByMonth.get(format(monthRange[salaryBasisIdx], 'yyyy-MM'))?.hours ?? 0,
+        settings
+      );
     const costBreakdown = calculateMonthlyCosts(
       settings,
       activeAssignments.length > 0,
-      hasRollingRevenue
+      canWithdrawSalary
     );
 
     const net = revenue - costBreakdown.total;
@@ -842,7 +853,7 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
       sourceMonths,
       overheadCost: Math.round(costBreakdown.overheadCost),
       salaryCost: Math.round(costBreakdown.salaryCost),
-      canWithdrawSalary: hasRollingRevenue,
+      canWithdrawSalary,
     };
   });
 };
