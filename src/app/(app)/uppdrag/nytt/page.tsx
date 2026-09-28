@@ -41,6 +41,7 @@ import {
   CONTRACT_TYPE_LABELS,
   PROJECT_STATUS_LABELS,
   PIPELINE_STATUS_LABELS,
+  PROJECT_FORM_FIELD_LABELS,
   type ContractType,
   type ProjectStatus,
   type PipelineStatus,
@@ -377,7 +378,12 @@ export default function NyttUppdragPage() {
         </Card>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit, (formErrors) => {
+        const fields = Object.keys(formErrors)
+          .map((key) => PROJECT_FORM_FIELD_LABELS[key] ?? key)
+          .join(", ");
+        toast.error(`Kontrollera formuläret: ${fields}.`);
+      })} className="space-y-6">
         {/* Customer and project info */}
         <Card>
           <CardHeader>

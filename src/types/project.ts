@@ -208,3 +208,20 @@ export const COMMUNICATION_TYPE_LABELS: Record<CustomerCommunication['type'], st
   möte: 'Möte',
   övrigt: 'Övrigt',
 };
+
+// Fältnamn för felmeddelanden i uppdragsformulären (nytt/redigera).
+export const PROJECT_FORM_FIELD_LABELS: Record<string, string> = {
+  customerName: "Kund",
+  title: "Uppdragsnamn",
+  startDate: "Startdatum",
+  endDate: "Slutdatum",
+  budgetedHours: "Budgeterade timmar",
+  contractType: "Avtalstyp",
+  hourlyRate: "Timpris",
+  fixedPrice: "Fast pris",
+  plannedHoursPerWeek: "Planerade timmar/vecka",
+  status: "Status",
+  pipelineStatus: "Pipeline-status",
+  workplaceType: "Arbetsställe",
+  workplaceSharePct: "Andel på plats",
+};

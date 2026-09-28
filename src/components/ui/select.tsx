@@ -6,7 +6,24 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Select = SelectPrimitive.Root;
+// Radix Select har en dold <select> för formulär. När value byts utifrån
+// (t.ex. react-hook-forms reset när ett uppdrag laddats) kan den skicka
+// onValueChange("") och tömma fältet tyst. Tomt värde är aldrig ett giltigt
+// val (Radix förbjuder SelectItem med value=""), så det filtreras bort här.
+function Select({
+  onValueChange,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Root>) {
+  return (
+    <SelectPrimitive.Root
+      {...props}
+      onValueChange={(value) => {
+        if (value === "") return;
+        onValueChange?.(value);
+      }}
+    />
+  );
+}
 
 const SelectGroup = SelectPrimitive.Group;
 

@@ -36,6 +36,7 @@ import {
 import {
   CONTRACT_TYPE_LABELS,
   PROJECT_STATUS_LABELS,
+  PROJECT_FORM_FIELD_LABELS,
   type ContractType,
   type ProjectStatus,
   type WorkPackage,
@@ -388,8 +389,11 @@ export default function RedigeraUppdragPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit, () => {
-        toast.error("Kontrollera formuläret - det finns valideringsfel.");
+      <form onSubmit={handleSubmit(onSubmit, (formErrors) => {
+        const fields = Object.keys(formErrors)
+          .map((key) => PROJECT_FORM_FIELD_LABELS[key] ?? key)
+          .join(", ");
+        toast.error(`Kontrollera formuläret: ${fields}.`);
       })} className="space-y-6">
         {/* Customer and project info */}
         <Card>
@@ -623,6 +627,9 @@ export default function RedigeraUppdragPage() {
                   )}
                 </SelectContent>
               </Select>
+              {errors.contractType && (
+                <p className="text-sm text-destructive">Välj avtalstyp</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
