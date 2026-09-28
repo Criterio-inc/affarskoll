@@ -60,6 +60,10 @@ export interface AppSettings {
 
   // Portfolio/Forecast settings
   defaultRevenueLagMonths: number;
+  // Full beläggning i procent av normal månadsbeläggning. Under tröskeln
+  // tas ingen lön eller overhead ut i prognosen (och månaden räknas inte
+  // som bokad på Runway-kortet).
+  fullBookingThresholdPct: number;
   forecastYears: number;        // How many years to project (Fas 3.5)
 
   // Availability & Absence settings
@@ -135,6 +139,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   approvedForFSkatt: false,
   companyLogoDataUrl: '',
   defaultRevenueLagMonths: 1,
+  fullBookingThresholdPct: 80,
   forecastYears: 3,
   vacationWeeks: 4,
   vacationMonths: ['juni', 'juli', 'augusti'],

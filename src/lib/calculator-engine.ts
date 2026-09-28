@@ -473,15 +473,14 @@ export const calculateBreakEvenThreshold = (settings: AppSettings): number => {
 };
 
 /**
- * Full beläggning: minst 80 % av normal månadsbeläggning
- * (targetBillableHoursPerYear / 12). Styr lönen i prognosen och
- * "bokad beläggning" på Runway-kortet.
+ * Full beläggning: minst fullBookingThresholdPct (standard 80 %) av normal
+ * månadsbeläggning (targetBillableHoursPerYear / 12). Styr lön och overhead
+ * i prognosen och "bokad beläggning" på Runway-kortet.
  */
-export const FULL_BOOKING_SHARE = 0.8;
-
 export const isFullyBookedMonth = (hours: number, settings: AppSettings): boolean => {
   const monthlyTarget = (settings.targetBillableHoursPerYear || 1400) / 12;
-  return hours >= monthlyTarget * FULL_BOOKING_SHARE;
+  const share = (settings.fullBookingThresholdPct ?? 80) / 100;
+  return hours > 0 && hours >= monthlyTarget * share;
 };
 
 // ============================================================================

@@ -545,6 +545,33 @@ export default function InstallningarPage() {
               </p>
             </div>
             <div className="space-y-2">
+              <Label>Full beläggning (% av normal månad)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step={5}
+                value={form.fullBookingThresholdPct}
+                onChange={(e) =>
+                  updateField(
+                    "fullBookingThresholdPct",
+                    Number(e.target.value)
+                  )
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Under gränsen tar prognosen ingen lön och ingen overhead.
+                Lönen tas ut månaden efter, när fakturan betalats. Normal
+                månad är {Math.round((form.targetBillableHoursPerYear || 1400) / 12)} h,
+                så gränsen blir cirka{" "}
+                {Math.round(
+                  ((form.targetBillableHoursPerYear || 1400) / 12) *
+                    ((form.fullBookingThresholdPct ?? 80) / 100)
+                )}{" "}
+                h.
+              </p>
+            </div>
+            <div className="space-y-2">
               <Label>Betalvillkor (dagar)</Label>
               <Input
                 type="number"
