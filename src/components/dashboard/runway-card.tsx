@@ -48,14 +48,34 @@ export function RunwayCard({
       };
     }
 
-    // Bokad beläggning framåt: månader med faktiskt schemalagda timmar på ett
-    // uppdrag. Detta är det ärliga "runway"-måttet — inte prognoshorisonten.
-    // (Prognosen sträcker sig flera år, men nollar lönen i tomma månader, så
-    // ett rått "månader tills negativ" blev missvisande höga 37.)
-    const committedForecast = forecast.filter((m) => (m.workedHours ?? 0) > 0);
-    const committedMonths = committedForecast.length;
+    // Bokad beläggning framåt: månader där minst halva normalbeläggningen är
+    // bokad. En månad med ett par timmar (t.ex. en utbildning utspridd över
+    // ett år) är ingen beläggning, men prognosen drar full lön för den och
+    // gav ett stort falskt minus. (Prognosen sträcker sig flera år och nollar
+    // lönen i tomma månader, så ett rått "månader tills negativ" blev
+    // missvisande höga 37.)
+    const monthlyTarget = (safeSettings.targetBillableHoursPerYear || 1400) / 12;
+    const minHours = monthlyTarget * 0.5;
+    const isBooked = (m: (typeof forecast)[number]) =>
+      (m.workedHours ?? 0) >= minHours;
+    const committedMonths = forecast.filter(isBooked).length;
 
-    // Netto under den bokade perioden (samma horisont som beläggningen visar).
+    // Perioden räknas till sista bokade månaden plus intäktsfördröjningen,
+    // så att fakturan för sista månadens arbete kommer med.
+    let lastBookedIdx = -1;
+    forecast.forEach((m, i) => {
+      if (isBooked(m)) lastBookedIdx = i;
+    });
+    const periodEnd =
+      lastBookedIdx < 0
+        ? -1
+        : Math.min(
+            forecast.length - 1,
+            lastBookedIdx + (safeSettings.defaultRevenueLagMonths ?? 0)
+          );
+    const committedForecast = forecast.slice(0, periodEnd + 1);
+
+    // Netto under den bokade perioden.
     const committedNet = committedForecast.reduce((s, m) => s + m.net, 0);
 
     // Varna om kassan (ingående + bokat netto månad för månad) blir negativ
