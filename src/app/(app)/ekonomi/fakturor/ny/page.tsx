@@ -418,7 +418,11 @@ export default function NyttFakturapaketPage() {
         return;
       }
       if (hasAdjustment && !adjustmentReason.trim()) {
-        toast.error("Beloppet avviker från tidsposterna — ange en avvikelseorsak");
+        toast.error(
+          project.contractType === "timpris"
+            ? "Beloppet avviker från tidsposterna. Ange en avvikelseorsak."
+            : "Beloppet avviker från det förväntade beloppet. Ange en avvikelseorsak."
+        );
         return;
       }
     } else {
