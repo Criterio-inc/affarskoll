@@ -7,6 +7,7 @@ export interface InvoiceLine {
   quantity: number;
   unit: string; // "timmar" | "st" | ...
   unitPrice: number;
+  addOnId?: string; // raden fakturerar uppdragets tilläggstillfälle med detta id
 }
 
 // Snapshot av köparens uppgifter när fakturan skapas — fakturan ska kunna

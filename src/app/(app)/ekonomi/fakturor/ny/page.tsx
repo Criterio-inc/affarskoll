@@ -50,6 +50,14 @@ import {
   type WorkCategory,
 } from "@/types/project";
 import { InvoiceLinesEditor } from "@/components/ekonomi/invoice-lines-editor";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  ADD_ON_DEFAULTS,
+  addOnLineText,
+  addOnsTotal,
+  invoicedAddOnMap,
+  projectAddOns,
+} from "@/lib/add-ons";
 import {
   type InvoiceLine,
   sumLines,
@@ -184,9 +192,13 @@ export default function NyttFakturapaketPage() {
   );
   const hourlyRate = project ? Number(project.hourlyRate ?? 0) : 0;
 
+  const isBrokerExempt = project?.brokerCommissionExempt === true;
+  const effectiveCommissionRate = isBrokerExempt ? 0 : brokerCommissionRate;
+
   // Fastpriset faktureras i klump (samma regel som prognosen), inte
   // periodiserat per dag. Det som redan fakturerats av fastpriset på
-  // uppdraget dras av, så att det aldrig föreslås två gånger.
+  // uppdraget dras av, så att det aldrig föreslås två gånger. Rader för
+  // tilläggstillfällen (addOnId) hör inte till fastpriset.
   const fixedAlreadyInvoicedGross = useMemo(() => {
     if (!project) return 0;
     const net = existingPackages
@@ -197,7 +209,7 @@ export default function NyttFakturapaketPage() {
           return (
             sum +
             lines
-              .filter((l) => l.unit === "st")
+              .filter((l) => l.unit === "st" && !l.addOnId)
               .reduce((s, l) => s + Number(l.quantity) * Number(l.unitPrice), 0)
           );
         }
@@ -206,9 +218,8 @@ export default function NyttFakturapaketPage() {
           ? sum
           : sum + Number(p.theoreticalAmount ?? 0);
       }, 0);
-    const rate = project.brokerCommissionExempt ? 0 : brokerCommissionRate;
-    return rate < 1 ? net / (1 - rate) : net;
-  }, [project, existingPackages, brokerCommissionRate]);
+    return effectiveCommissionRate < 1 ? net / (1 - effectiveCommissionRate) : net;
+  }, [project, existingPackages, effectiveCommissionRate]);
 
   const fixedTotal = project ? Number(project.fixedPrice ?? 0) : 0;
   const fixedRemainingGross = Math.max(
@@ -216,7 +227,8 @@ export default function NyttFakturapaketPage() {
     Math.round(fixedTotal - fixedAlreadyInvoicedGross)
   );
   // Blandat: fasta delen kommer med först när perioden når uppdragets slut.
-  // Rena fastprisuppdrag: varje faktura är slutfakturan för fastpriset.
+  // Rena fastprisuppdrag: fastpriset kommer med på första fakturan (även i
+  // förväg) och därefter aldrig igen.
   const includesFixed =
     !!project &&
     fixedRemainingGross > 0 &&
@@ -224,7 +236,31 @@ export default function NyttFakturapaketPage() {
       (!!periodEnd && !!project.endDate && periodEnd >= project.endDate));
   const fixedGrossOnInvoice = includesFixed ? fixedRemainingGross : 0;
 
-  // Bruttobelopp = det kunden faktureras (timmar × pris eller fastpris).
+  // Tilläggstillfällen som inte fakturerats än. Förval: de som hålls senast
+  // periodens slut (efterhand). Senare tillfällen kan bockas i för förskott.
+  const invoicedAddOns = useMemo(
+    () => (project ? invoicedAddOnMap(existingPackages, project.id) : new Map()),
+    [project, existingPackages]
+  );
+  const openAddOns = useMemo(
+    () =>
+      projectAddOns(project)
+        .filter((a) => !invoicedAddOns.has(a.id))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    [project, invoicedAddOns]
+  );
+  const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
+  const [addOnsTouched, setAddOnsTouched] = useState(false);
+  useEffect(() => {
+    if (addOnsTouched) return;
+    setSelectedAddOnIds(
+      openAddOns.filter((a) => !!periodEnd && a.date <= periodEnd).map((a) => a.id)
+    );
+  }, [openAddOns, periodEnd, addOnsTouched]);
+  const selectedAddOns = openAddOns.filter((a) => selectedAddOnIds.includes(a.id));
+  const addOnsGross = Math.round(addOnsTotal(selectedAddOns));
+
+  // Bruttobelopp = det kunden faktureras (timmar × pris, fastpris, tillägg).
   // Förmedlingspartnern tar sin provision av detta — konsultbolaget fakturerar nettot.
   const grossAmount = useMemo(() => {
     if (mode === "historical") return 0; // ingen teoretisk grund
@@ -233,20 +269,24 @@ export default function NyttFakturapaketPage() {
       project.contractType === "fastpris" ||
       project.contractType === "fastpris_overtid"
     ) {
-      return fixedGrossOnInvoice;
+      return fixedGrossOnInvoice + addOnsGross;
     }
     if (project.contractType === "blandat") {
-      return Math.round(fixedGrossOnInvoice + totalHours * hourlyRate);
+      return Math.round(fixedGrossOnInvoice + totalHours * hourlyRate) + addOnsGross;
     }
-    return Math.round(totalHours * hourlyRate);
-  }, [project, totalHours, hourlyRate, fixedGrossOnInvoice, mode]);
+    return Math.round(totalHours * hourlyRate) + addOnsGross;
+  }, [project, totalHours, hourlyRate, fixedGrossOnInvoice, addOnsGross, mode]);
 
   // Förmedlingsprovisionen dras av — men bara om uppdraget inte är undantaget
   // (vissa uppdrag har provisionen borttagen). Det är nettot som faktureras.
-  const isBrokerExempt = project?.brokerCommissionExempt === true;
-  const effectiveCommissionRate = isBrokerExempt ? 0 : brokerCommissionRate;
   const brokerCommissionAmount = Math.round(grossAmount * effectiveCommissionRate);
   const theoreticalAmount = grossAmount - brokerCommissionAmount;
+
+  // Förval av uppdrag från länken ?projectId= (t.ex. "Fakturera tillägg")
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("projectId");
+    if (id) setProjectId(id);
+  }, []);
 
   // Periodförval: innevarande månad (klampad till uppdragets start)
   useEffect(() => {
@@ -305,38 +345,24 @@ export default function NyttFakturapaketPage() {
     if (mode !== "current" || !project || linesTouched) return;
     if (!periodStart || !periodEnd) return;
     const netRate = round2(hourlyRate * (1 - effectiveCommissionRate));
-    const next: InvoiceLine[] = [];
-    if (project.contractType === "blandat") {
-      const fixedNet = round2(
-        fixedGrossOnInvoice * (1 - effectiveCommissionRate)
-      );
-      if (fixedNet > 0)
-        next.push({
-          id: newLineId(),
-          description: "Konsultuppdrag (fast del)",
-          quantity: 1,
-          unit: "st",
-          unitPrice: fixedNet,
-        });
-      next.push({
-        id: newLineId(),
-        description: "Konsultuppdrag",
-        quantity: round2(totalHours),
-        unit: "timmar",
-        unitPrice: netRate,
-      });
-    } else if (
+    const fixedNet = round2(fixedGrossOnInvoice * (1 - effectiveCommissionRate));
+    const isFixed =
       project.contractType === "fastpris" ||
-      project.contractType === "fastpris_overtid"
-    ) {
+      project.contractType === "fastpris_overtid";
+    const next: InvoiceLine[] = [];
+    if (fixedNet > 0)
       next.push({
         id: newLineId(),
-        description: "Konsultuppdrag (fastpris)",
+        description:
+          project.contractType === "blandat"
+            ? "Konsultuppdrag (fast del)"
+            : "Konsultuppdrag (fastpris)",
         quantity: 1,
         unit: "st",
-        unitPrice: theoreticalAmount,
+        unitPrice: fixedNet,
       });
-    } else {
+    // Timrad: alltid på timpris/blandat, utom när fakturan bara gäller tillägg
+    if (!isFixed && (totalHours > 0 || selectedAddOns.length === 0))
       next.push({
         id: newLineId(),
         description: "Konsultuppdrag",
@@ -344,10 +370,18 @@ export default function NyttFakturapaketPage() {
         unit: "timmar",
         unitPrice: netRate,
       });
-    }
+    for (const a of selectedAddOns)
+      next.push({
+        id: newLineId(),
+        description: addOnLineText(a),
+        quantity: 1,
+        unit: "st",
+        unitPrice: round2(a.price * (1 - effectiveCommissionRate)),
+        addOnId: a.id,
+      });
     setLines(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, project, linesTouched, periodStart, periodEnd, totalHours, hourlyRate, effectiveCommissionRate, theoreticalAmount, fixedGrossOnInvoice]);
+  }, [mode, project, linesTouched, periodStart, periodEnd, totalHours, hourlyRate, effectiveCommissionRate, fixedGrossOnInvoice, selectedAddOnIds]);
 
   // Fritextraden: börja från förra fakturans text för uppdraget (byt period),
   // annars en enkel mall med slutkund + period.
@@ -591,7 +625,14 @@ export default function NyttFakturapaketPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Uppdrag</Label>
-                  <Select value={projectId} onValueChange={setProjectId}>
+                  <Select
+                    value={projectId}
+                    onValueChange={(v) => {
+                      setProjectId(v);
+                      setAddOnsTouched(false);
+                      setLinesTouched(false);
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Välj uppdrag" />
                     </SelectTrigger>
@@ -668,6 +709,47 @@ export default function NyttFakturapaketPage() {
                       <div className="text-xs text-muted-foreground">
                         Fasta delen kommer med på fakturan när perioden når
                         uppdragets slut ({project.endDate}).
+                      </div>
+                    )}
+                    {openAddOns.length > 0 && (
+                      <div className="pt-1 space-y-1">
+                        <div className="text-muted-foreground">
+                          Tilläggstillfällen att fakturera
+                        </div>
+                        {openAddOns.map((a) => {
+                          const checked = selectedAddOnIds.includes(a.id);
+                          const advance = !!periodEnd && a.date > periodEnd;
+                          return (
+                            <label
+                              key={a.id}
+                              className="flex items-center justify-between gap-2 cursor-pointer"
+                            >
+                              <span className="flex items-center gap-2 min-w-0">
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(v) => {
+                                    setAddOnsTouched(true);
+                                    setLinesTouched(false);
+                                    setSelectedAddOnIds((prev) =>
+                                      v
+                                        ? [...prev, a.id]
+                                        : prev.filter((x) => x !== a.id)
+                                    );
+                                  }}
+                                />
+                                <span className="truncate">
+                                  {a.description || ADD_ON_DEFAULTS[a.kind].label} {a.date}
+                                  {advance && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {" "}(i förväg)
+                                    </span>
+                                  )}
+                                </span>
+                              </span>
+                              <span>{formatCurrency(a.price)}</span>
+                            </label>
+                          );
+                        })}
                       </div>
                     )}
                     <Separator className="my-1" />

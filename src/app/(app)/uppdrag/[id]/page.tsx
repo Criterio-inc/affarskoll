@@ -32,6 +32,8 @@ import {
   formatCurrency,
 } from "@/lib/utils";
 import { projectEarnedRevenue } from "@/lib/revenue";
+import { addOnsHours, addOnsTotal, projectAddOns } from "@/lib/add-ons";
+import { AddOnsCard } from "@/components/uppdrag/add-ons-card";
 import {
   useTimeEntries,
   useCreateTimeEntry,
@@ -205,10 +207,15 @@ export default function ProjectDetailPage() {
       .reduce((s: number, e: TimeEntry) => s + Number(e.hours), 0);
 
     // Revenue (intjänad total): fastpris fullt, övertid räknas — delad modell.
-    const revenue = projectEarnedRevenue(project, {
-      total: totalUsedHours,
-      billable: billableHours,
-    });
+    // Tilläggstillfällen räknas in med pris och uppskattade timmar.
+    const addOns = projectAddOns(project);
+    const addOnRevenue = addOnsTotal(addOns);
+    const addOnHours = addOnsHours(addOns);
+    const revenue =
+      projectEarnedRevenue(project, {
+        total: totalUsedHours,
+        billable: billableHours,
+      }) + addOnRevenue;
 
     // Provision (förmedling) — dras inte av om uppdraget är undantaget
     const commission =
@@ -226,8 +233,8 @@ export default function ProjectDetailPage() {
     // timprisuppdrag räknas på nedlagd tid, som intäkten.
     const isFixedCalc = project.contractType !== "timpris";
     const costHours = isFixedCalc
-      ? Math.max(totalUsedHours, budgetedHours)
-      : totalUsedHours;
+      ? Math.max(totalUsedHours, budgetedHours + addOnHours)
+      : totalUsedHours + addOnHours;
     const laborCost = costHours * laborCostPerHour;
 
     // Overhead fördelas per timme över en full månad, inte per kalendermånad
@@ -716,13 +723,23 @@ export default function ProjectDetailPage() {
                     </span>
                   </div>
                 )}
+                {projectAddOns(project).length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Tillägg ({projectAddOns(project).length} st)
+                    </span>
+                    <span>
+                      {formatCurrency(addOnsTotal(projectAddOns(project)))}
+                    </span>
+                  </div>
+                )}
                 {(() => {
                   const totalVal = calculateTotalValue(
                     project.contractType,
                     budgetedHours,
                     Number(project.hourlyRate ?? 0),
                     Number(project.fixedPrice ?? 0)
-                  );
+                  ) + addOnsTotal(projectAddOns(project));
                   if (totalVal <= 0) return null;
                   const netAfterCommission = calculateNetAfterCommission(
                     totalVal,
@@ -752,6 +769,13 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
           </div>
+
+          <AddOnsCard
+            project={project}
+            commissionRate={
+              project.brokerCommissionExempt ? 0 : safeSettings.brokerCommissionRate
+            }
+          />
 
           {/* Fas 6.2: Profitability */}
           {profitability && (

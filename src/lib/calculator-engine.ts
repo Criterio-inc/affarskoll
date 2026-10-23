@@ -742,6 +742,19 @@ export const calculateMonthlyForecast = (input: MonthlyForecastInput): MonthlyDa
       }
     }
 
+    // Tilläggstillfällen faktureras för sig: intäkten läggs månaden efter
+    // tillfället (eller senare vid längre fördröjning).
+    for (const addOn of assignment.addOns ?? []) {
+      const d = safeParseDate(addOn.date);
+      if (!d || !(addOn.price > 0)) continue;
+      const idx = monthRange.findIndex((m) => format(m, 'yyyy-MM') === format(d, 'yyyy-MM'));
+      const payIdx = idx + Math.max(1, lagMonths);
+      if (idx < 0 || payIdx >= monthRange.length) continue;
+      const payData = laggedRevenueByMonth.get(format(monthRange[payIdx], 'yyyy-MM'))!;
+      payData.total += addOn.price * (1 - effectiveSettings.brokerCommissionRate);
+      payData.sourceMonths.add(format(d, 'MMM', { locale: sv }));
+    }
+
     monthRange.forEach((monthDate, monthIndex) => {
       const monthStart = startOfMonth(monthDate);
       const monthEnd = endOfMonth(monthDate);

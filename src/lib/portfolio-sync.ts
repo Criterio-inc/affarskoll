@@ -24,6 +24,7 @@ export function projectToPortfolioAssignment(project: Project): PortfolioAssignm
     phases: project.phases,
     revenueLagMonths: project.revenueLagMonths,
     skipAbsenceDeduction: project.skipAbsenceDeduction,
+    addOns: (project.addOns ?? []).map((a) => ({ date: a.date, price: Number(a.price) || 0 })),
     // Undantaget från Förmedlingsprovision → 0 % i prognosmotorn så netto/runway stämmer.
     ...(project.brokerCommissionExempt
       ? { useCustomSettings: true, overrides: { brokerCommissionRate: 0 } }
@@ -160,7 +161,8 @@ export function mergePortfolioWithProjects(
         driftedIds.push(saved.id);
         diffs[saved.id] = drift;
       }
-      merged.push(saved);
+      // Tilläggen ägs av uppdraget och följer alltid med live
+      merged.push({ ...saved, addOns: fromProject.addOns });
     } else {
       merged.push(fromProject);
     }

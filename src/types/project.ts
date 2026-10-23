@@ -17,6 +17,20 @@ export interface WorkPackage {
   endWeek?: number;    // Optional: relative week (inclusive)
 }
 
+export type AddOnKind = 'halvdag' | 'heldag' | 'annat';
+
+// Tilläggstillfälle utöver avtalet (t.ex. extra utbildningsdag). Faktureras
+// separat, i förväg eller i efterhand; om det är fakturerat avgörs av om en
+// icke-krediterad faktura har en rad med addOnId = id.
+export interface ProjectAddOn {
+  id: string;
+  kind: AddOnKind;
+  description: string;
+  date: string;   // ISO, dagen tillfället hålls
+  price: number;  // brutto till kund, före förmedlingsprovision
+  hours: number;  // uppskattad tid, för lönsamhet
+}
+
 export interface ContractFile {
   name: string;
   url: string;
@@ -68,6 +82,7 @@ export interface Project {
   status: ProjectStatus;
   pipelineStatus: PipelineStatus;
   workPackages: WorkPackage[];
+  addOns?: ProjectAddOn[];
   contractFiles?: ContractFile[];
   plannedHoursPerWeek?: number;
   billingDate?: number; // Day of month for billing reminder

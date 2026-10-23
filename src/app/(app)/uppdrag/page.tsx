@@ -16,6 +16,7 @@ import { useProjects, type Project } from "@/hooks/use-projects";
 import { useTimeEntries, type TimeEntry } from "@/hooks/use-time-entries";
 import { useSettings } from "@/hooks/use-settings";
 import { getSafeSettings } from "@/lib/settings";
+import { addOnsTotal, projectAddOns } from "@/lib/add-ons";
 import { calculateTotalValue, calculateNetAfterCommission, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -302,7 +303,7 @@ export default function UppdragPage() {
                         budgetedHours,
                         Number(project.hourlyRate ?? 0),
                         Number(project.fixedPrice ?? 0)
-                      );
+                      ) + addOnsTotal(projectAddOns(project));
                       if (totalVal <= 0) return null;
                       const netAfterCommission = calculateNetAfterCommission(
                         totalVal,

@@ -33,6 +33,8 @@ export const projects = pgTable(
     status: text("status").notNull().default("prospekt"), // prospekt | aktiv | avslutad | arkiverad
     pipelineStatus: text("pipeline_status").default("förfrågan"),
     workPackages: jsonb("work_packages").default([]),
+    // Tilläggstillfällen utöver avtalet (t.ex. extra utbildningsdagar), se ProjectAddOn
+    addOns: jsonb("add_ons").default([]),
     contractFiles: jsonb("contract_files").default([]),
     plannedHoursPerWeek: numeric("planned_hours_per_week"),
     billingDate: integer("billing_date"),

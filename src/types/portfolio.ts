@@ -75,6 +75,8 @@ export interface PortfolioAssignment {
   revenueLagMonths?: number;        // Default: 1, number of months delay between work and revenue
   // Absence deduction control
   skipAbsenceDeduction?: boolean;   // Default: false, set true for part-time/flexible assignments
+  // Tilläggstillfällen utöver avtalet (brutto), faktureras månaden efter tillfället
+  addOns?: { date: string; price: number }[];
 }
 
 export interface MonthlyData {
