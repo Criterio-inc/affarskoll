@@ -38,7 +38,6 @@ import {
   useDeleteTimeEntry,
   type TimeEntry,
 } from "@/hooks/use-time-entries";
-import { differenceInCalendarDays, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -222,20 +221,23 @@ export default function ProjectDetailPage() {
     const targetMonthlyHours = settings.targetWeeklyHours * 4.33;
     const laborCostPerHour =
       targetMonthlyHours > 0 ? monthlyLaborCost / targetMonthlyHours : 0;
-    const laborCost = totalUsedHours * laborCostPerHour;
+    // Fastpris räknas in i sin helhet, så kostnaden ska också gälla hela
+    // uppdraget: budgeterade timmar, eller nedlagda om de är fler. Rena
+    // timprisuppdrag räknas på nedlagd tid, som intäkten.
+    const isFixedCalc = project.contractType !== "timpris";
+    const costHours = isFixedCalc
+      ? Math.max(totalUsedHours, budgetedHours)
+      : totalUsedHours;
+    const laborCost = costHours * laborCostPerHour;
 
-    // Allocated overhead based on project duration in months
-    let overheadCost = 0;
-    try {
-      const s = parseISO(project.startDate);
-      const e = parseISO(project.endDate);
-      const days = Math.max(1, differenceInCalendarDays(e, s) + 1);
-      const months = days / 30;
-      overheadCost =
-        (settings.monthlyOverhead + settings.brokerMonthlyFee) * months;
-    } catch {
-      /* ignore */
-    }
+    // Overhead fördelas per timme över en full månad, inte per kalendermånad
+    // uppdraget pågår (då bar varje litet uppdrag hela månadens overhead).
+    const overheadPerHour =
+      targetMonthlyHours > 0
+        ? (settings.monthlyOverhead + settings.brokerMonthlyFee) /
+          targetMonthlyHours
+        : 0;
+    const overheadCost = costHours * overheadPerHour;
 
     const totalCost = laborCost + overheadCost;
     const netProfit = netRevenue - totalCost;
@@ -249,6 +251,9 @@ export default function ProjectDetailPage() {
       laborCost,
       laborCostPerHour,
       overheadCost,
+      overheadPerHour,
+      costHours,
+      isFixedCalc,
       totalCost,
       netProfit,
       margin,
@@ -755,15 +760,26 @@ export default function ProjectDetailPage() {
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <CardTitle className="text-sm font-medium">
-                    Lönsamhet (hittills)
+                    {profitability.isFixedCalc
+                      ? "Lönsamhet (kalkyl för hela uppdraget)"
+                      : "Lönsamhet (hittills)"}
                   </CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Debiterbara timmar</span>
-                  <span>{profitability.billableHours.toFixed(1)}h</span>
-                </div>
+                {profitability.isFixedCalc ? (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Timmar i kalkylen</span>
+                    <span>
+                      {profitability.costHours.toFixed(1)} h ({totalUsedHours.toFixed(1)} h nedlagt)
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Debiterbara timmar</span>
+                    <span>{profitability.billableHours.toFixed(1)}h</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Bruttointäkt</span>
                   <span>{formatCurrency(profitability.revenue)}</span>
@@ -777,7 +793,7 @@ export default function ProjectDetailPage() {
                   <span>&minus;{formatCurrency(profitability.laborCost)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-red-600">
-                  <span>&minus; Allokerad overhead</span>
+                  <span>&minus; Overhead ({Math.round(profitability.overheadPerHour)}/h)</span>
                   <span>&minus;{formatCurrency(profitability.overheadCost)}</span>
                 </div>
                 <div className="flex justify-between font-semibold pt-2 border-t">

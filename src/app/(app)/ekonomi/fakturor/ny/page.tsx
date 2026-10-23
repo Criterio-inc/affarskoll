@@ -184,30 +184,45 @@ export default function NyttFakturapaketPage() {
   );
   const hourlyRate = project ? Number(project.hourlyRate ?? 0) : 0;
 
-  // Fast del periodiserad dagbaserat mot uppdragets längd. Gäller fastpris,
-  // fastpris_overtid OCH blandat — så den fasta delen aldrig föreslås i sin
-  // helhet på varje delfaktura. Perioden kapas vid uppdragets längd.
-  const proratedFixedGross = useMemo(() => {
+  // Fastpriset faktureras i klump (samma regel som prognosen), inte
+  // periodiserat per dag. Det som redan fakturerats av fastpriset på
+  // uppdraget dras av, så att det aldrig föreslås två gånger.
+  const fixedAlreadyInvoicedGross = useMemo(() => {
     if (!project) return 0;
-    const fixed = Number(project.fixedPrice ?? 0);
-    if (fixed <= 0) return 0;
-    const pStart = project.startDate ? new Date(project.startDate) : null;
-    const pEnd = project.endDate ? new Date(project.endDate) : null;
-    if (pStart && pEnd && periodStart && periodEnd) {
-      const totalDays = Math.max(
-        1,
-        (pEnd.getTime() - pStart.getTime()) / (1000 * 60 * 60 * 24) + 1
-      );
-      const periodDays = Math.max(
-        1,
-        (new Date(periodEnd).getTime() - new Date(periodStart).getTime()) /
-          (1000 * 60 * 60 * 24) +
-          1
-      );
-      return Math.round((fixed * Math.min(periodDays, totalDays)) / totalDays);
-    }
-    return fixed;
-  }, [project, periodStart, periodEnd]);
+    const net = existingPackages
+      .filter((p) => p.projectId === project.id && p.status !== "krediterad")
+      .reduce((sum, p) => {
+        const lines = p.invoiceLines ?? [];
+        if (lines.length > 0) {
+          return (
+            sum +
+            lines
+              .filter((l) => l.unit === "st")
+              .reduce((s, l) => s + Number(l.quantity) * Number(l.unitPrice), 0)
+          );
+        }
+        // Äldre fakturor utan rader: hela beloppet är fastpris på rena fastprisuppdrag
+        return project.contractType === "blandat"
+          ? sum
+          : sum + Number(p.theoreticalAmount ?? 0);
+      }, 0);
+    const rate = project.brokerCommissionExempt ? 0 : brokerCommissionRate;
+    return rate < 1 ? net / (1 - rate) : net;
+  }, [project, existingPackages, brokerCommissionRate]);
+
+  const fixedTotal = project ? Number(project.fixedPrice ?? 0) : 0;
+  const fixedRemainingGross = Math.max(
+    0,
+    Math.round(fixedTotal - fixedAlreadyInvoicedGross)
+  );
+  // Blandat: fasta delen kommer med först när perioden når uppdragets slut.
+  // Rena fastprisuppdrag: varje faktura är slutfakturan för fastpriset.
+  const includesFixed =
+    !!project &&
+    fixedRemainingGross > 0 &&
+    (project.contractType !== "blandat" ||
+      (!!periodEnd && !!project.endDate && periodEnd >= project.endDate));
+  const fixedGrossOnInvoice = includesFixed ? fixedRemainingGross : 0;
 
   // Bruttobelopp = det kunden faktureras (timmar × pris eller fastpris).
   // Förmedlingspartnern tar sin provision av detta — konsultbolaget fakturerar nettot.
@@ -218,13 +233,13 @@ export default function NyttFakturapaketPage() {
       project.contractType === "fastpris" ||
       project.contractType === "fastpris_overtid"
     ) {
-      return proratedFixedGross;
+      return fixedGrossOnInvoice;
     }
     if (project.contractType === "blandat") {
-      return Math.round(proratedFixedGross + totalHours * hourlyRate);
+      return Math.round(fixedGrossOnInvoice + totalHours * hourlyRate);
     }
     return Math.round(totalHours * hourlyRate);
-  }, [project, totalHours, hourlyRate, proratedFixedGross, mode]);
+  }, [project, totalHours, hourlyRate, fixedGrossOnInvoice, mode]);
 
   // Förmedlingsprovisionen dras av — men bara om uppdraget inte är undantaget
   // (vissa uppdrag har provisionen borttagen). Det är nettot som faktureras.
@@ -293,12 +308,12 @@ export default function NyttFakturapaketPage() {
     const next: InvoiceLine[] = [];
     if (project.contractType === "blandat") {
       const fixedNet = round2(
-        proratedFixedGross * (1 - effectiveCommissionRate)
+        fixedGrossOnInvoice * (1 - effectiveCommissionRate)
       );
       if (fixedNet > 0)
         next.push({
           id: newLineId(),
-          description: "Konsultuppdrag (fast del, periodiserad)",
+          description: "Konsultuppdrag (fast del)",
           quantity: 1,
           unit: "st",
           unitPrice: fixedNet,
@@ -332,7 +347,7 @@ export default function NyttFakturapaketPage() {
     }
     setLines(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, project, linesTouched, periodStart, periodEnd, totalHours, hourlyRate, effectiveCommissionRate, theoreticalAmount, proratedFixedGross]);
+  }, [mode, project, linesTouched, periodStart, periodEnd, totalHours, hourlyRate, effectiveCommissionRate, theoreticalAmount, fixedGrossOnInvoice]);
 
   // Fritextraden: börja från förra fakturans text för uppdraget (byt period),
   // annars en enkel mall med slutkund + period.
@@ -621,10 +636,34 @@ export default function NyttFakturapaketPage() {
                         <span>{excludedHours.toFixed(1)} h</span>
                       </div>
                     )}
-                    {hourlyRate > 0 && (
+                    {hourlyRate > 0 &&
+                      project.contractType !== "fastpris" &&
+                      project.contractType !== "fastpris_overtid" && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Timpris</span>
+                          <span>{formatCurrency(hourlyRate)}/h</span>
+                        </div>
+                      )}
+                    {fixedTotal > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Timpris</span>
-                        <span>{formatCurrency(hourlyRate)}/h</span>
+                        <span className="text-muted-foreground">
+                          Fast pris (hela uppdraget)
+                        </span>
+                        <span>{formatCurrency(fixedTotal)}</span>
+                      </div>
+                    )}
+                    {fixedTotal > 0 && fixedAlreadyInvoicedGross > 0 && (
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Redan fakturerat av fastpriset</span>
+                        <span>
+                          {formatCurrency(Math.round(fixedAlreadyInvoicedGross))}
+                        </span>
+                      </div>
+                    )}
+                    {fixedTotal > 0 && !includesFixed && fixedRemainingGross > 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        Fasta delen kommer med på fakturan när perioden når
+                        uppdragets slut ({project.endDate}).
                       </div>
                     )}
                     <Separator className="my-1" />
