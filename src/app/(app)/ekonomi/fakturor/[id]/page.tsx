@@ -105,6 +105,26 @@ function formatDate(d: string | null): string {
   }
 }
 
+// Förfallodatum = utfärdat + betalningsvillkor. Null om något saknas.
+function dueFromTerms(issueDate: string, termsDays: string): string | null {
+  const days = Number(termsDays);
+  if (!issueDate || termsDays.trim() === "" || !Number.isFinite(days)) return null;
+  const d = new Date(`${issueDate}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+// Ändras förfallodatumet för hand följer villkoret med (om fakturan har villkor).
+function termsFromDates(issueDate: string, dueDate: string, current: string): string {
+  if (current.trim() === "" || !issueDate || !dueDate) return current;
+  const diff = Math.round(
+    (Date.parse(`${dueDate}T00:00:00Z`) - Date.parse(`${issueDate}T00:00:00Z`)) /
+      86_400_000
+  );
+  return Number.isFinite(diff) && diff >= 0 ? String(diff) : current;
+}
+
 export default function FakturapaketDetaljPage() {
   const params = useParams();
   const router = useRouter();
@@ -910,6 +930,8 @@ export default function FakturapaketDetaljPage() {
                         setEdit((s) => ({
                           ...s,
                           paymentTermsDays: e.target.value,
+                          dueDate:
+                            dueFromTerms(s.issueDate, e.target.value) ?? s.dueDate,
                         }))
                       }
                     />
@@ -1016,7 +1038,12 @@ export default function FakturapaketDetaljPage() {
                   type="date"
                   value={edit.issueDate}
                   onChange={(e) =>
-                    setEdit((s) => ({ ...s, issueDate: e.target.value }))
+                    setEdit((s) => ({
+                      ...s,
+                      issueDate: e.target.value,
+                      dueDate:
+                        dueFromTerms(e.target.value, s.paymentTermsDays) ?? s.dueDate,
+                    }))
                   }
                 />
               </div>
@@ -1026,7 +1053,12 @@ export default function FakturapaketDetaljPage() {
                   type="date"
                   value={edit.dueDate}
                   onChange={(e) =>
-                    setEdit((s) => ({ ...s, dueDate: e.target.value }))
+                    setEdit((s) => ({
+                      ...s,
+                      dueDate: e.target.value,
+                      paymentTermsDays:
+                        termsFromDates(s.issueDate, e.target.value, s.paymentTermsDays),
+                    }))
                   }
                 />
               </div>
